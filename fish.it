@@ -1,22 +1,12 @@
-local scriptURL = "loadstring(game:HttpGet("https://raw.githubusercontent.com/MajestySkie/Chloe-X/main/Main/ChloeX"))()"
+local games = {
+    [135467792759815] = "https://raw.githubusercontent.com/MajestySkie/Chloe-X/refs/heads/main/Games/FishIt.lua",
+}
 
-local success, errorMessage = pcall(function()
-    loadstring(game:HttpGet(scriptURL, true))()
-end)
+local currentID = game.PlaceId
+local scriptURL = games[currentID]
 
-if success then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Loader",
-        Text = "Script berhasil dimuat!",
-        Duration = 5
-    })
+if scriptURL then
+    loadstring(game:HttpGet(scriptURL))()
 else
-
-    warn("Gagal load script: " .. tostring(errorMessage))
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Loader Error",
-        Text = "Gagal memuat script.\nCek koneksi atau link.",
-        Duration = 8
-    })
+    game.Players.LocalPlayer:Kick("Yo! This game ain't on the list.\nCheck the Discord for whitelisted games, homie.")
 end
