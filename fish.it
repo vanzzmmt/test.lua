@@ -1,5 +1,7 @@
 local games = {
-    [135467792759815] = "https://raw.githubusercontent.com/MajestySkie/Chloe-X/refs/heads/main/Games/FishIt.lua",
+    [121864768012064] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/fishit",
+    [131623223084840] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/etfb",
+    [121970908703979] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/etfb",
 }
 
 local currentID = game.PlaceId
@@ -8,5 +10,5 @@ local scriptURL = games[currentID]
 if scriptURL then
     loadstring(game:HttpGet(scriptURL))()
 else
-    game.Players.LocalPlayer:Kick("Yo! This game ain't on the list.\nCheck the Discord for whitelisted games, homie.")
+    game.Players.LocalPlayer:Kick("\n[Akses Ditolak]\nGame ini belum terdaftar dalam database kami.\nSilahkan hubungi admin di Discord untuk informasi lebih lanjut.")
 end
