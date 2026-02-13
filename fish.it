@@ -1,7 +1,6 @@
 local games = {
-    [121864768012064] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/fishit",
-    [131623223084840] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/etfb",
-    [121970908703979] = "https://raw.githubusercontent.com/cyaahekel/NoxiusHub/refs/heads/main/etfb",
+
+    [121970908703979] = "https://api.jnkie.com/api/v1/luascripts/public/ea2562d7bc66389be22c1dee9fcd21d6ebe0ec5f5e75b4bd34265ec7a05d20cf/download"
 }
 
 local currentID = game.PlaceId
