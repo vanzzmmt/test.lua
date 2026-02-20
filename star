@@ -113,10 +113,10 @@ ReplicatedStorage.Events.Global.ClientRecieveItems.OnClientEvent:Connect(functio
 
          ItemCount += 1
 
-         -- AUTO FAVORITE
+         -- AUTO FAVORITE (FIXED)
          if (rarity == "Legendary" and FavLegendary) or (rarity == "Mythic" and FavMythic) then
             pcall(function()
-               ReplicatedStorage.Events.Global.ToggleFavorite:FireServer(id, true)
+               ReplicatedStorage.Events.Global.ClientToggleFavorite:FireServer(id)
             end)
          end
       end
