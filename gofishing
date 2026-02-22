@@ -1,46 +1,187 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+local Window = Rayfield:CreateWindow({
+   Name = "Go Fishing Hub | by vanzzmmt",
+   LoadingTitle = "gofishing",
+   LoadingSubtitle = "Made by vanzzmmt",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "GoFishing", 
+      FileName = "vanzzConfig"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "no",
+      RememberJoins = true 
+   },
+   KeySystem = false
+})
+
+local MainTab = Window:CreateTab("🎣 Main", 4483362458)
+local PlayerTab = Window:CreateTab("👤 Player", 4483362458)
+local TeleportTab = Window:CreateTab("📍 Teleport", 4483362458)
+
+-- Variables
+getgenv().AutoFishEnabled = false
+getgenv().AutoSellEnabled = false
+getgenv().InfJumpEnabled = false
+getgenv().WalkSpeed = 16
+getgenv().JumpPower = 50
+
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
-local Remotes = ReplicatedStorage:WaitForChild("Remotes", 10)
-if not Remotes then warn("Remotes not found! Rejoin game.") return end
+local Fishing = ReplicatedStorage:WaitForChild("Fishing", 10)
+local FightClick = Fishing:WaitForChild("FightClick", 5)
 
-local CastRod = Remotes:WaitForChild("CastRod", 5)
-local ReelIn = Remotes:WaitForChild("ReelIn", 5)  -- Kalau gak ada, comment line ini
+-- MAIN TAB: Auto Farm
+local MainSection = MainTab:CreateSection("Auto Farm")
 
-getgenv().InstantFishEnabled = false
-local isFishing = false 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.F then
-        getgenv().InstantFishEnabled = not getgenv().InstantFishEnabled
-        print("🚀 **Instant Fish:", getgenv().InstantFishEnabled and "ON (God Mode!)" or "OFF**")
-        if getgenv().InstantFishEnabled then
-            isFishing = false
-        end
-    end
-end)
-
--- Main Instant Loop (60 FPS smooth)
-RunService.Heartbeat:Connect(function()
-    if getgenv().InstantFishEnabled and not isFishing then
-        isFishing = true
-        pcall(function()
-            -- STEP 1: INSTANT CAST
-            CastRod:FireServer("Cast", "Primary")
-            
-            task.wait(0.01)  -- Ultra minimal (instan feel)
-            
-            -- STEP 2: INSTANT REEL (catch fish langsung)
-            if ReelIn then
-                ReelIn:FireServer()  -- Args kosong (common), atau coba "Reel" kalau error
+MainTab:CreateToggle({
+   Name = "🚀 Auto Fish (Instant God Mode)",
+   CurrentValue = false,
+   Flag = "AutoFishToggle",
+   Callback = function(Value)
+      getgenv().AutoFishEnabled = Value
+      if Value then
+         spawn(function()
+            while getgenv().AutoFishEnabled do
+               pcall(function()
+                  FightClick:FireServer()
+               end)
+               task.wait(0.01)  -- Ultra fast spam = INSTANT fish!
             end
-            
-            task.wait(0.03)  -- Cooldown tiny biar server gak rage
-        end)
-        isFishing = false
-    end
+         end)
+      end
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "💰 Auto Sell (Every 10s)",
+   CurrentValue = false,
+   Flag = "AutoSellToggle",
+   Callback = function(Value)
+      getgenv().AutoSellEnabled = Value
+      if Value then
+         spawn(function()
+            while getgenv().AutoSellEnabled do
+               pcall(function()
+                  -- Common Sell remotes (adjust if needed via spy)
+                  if ReplicatedStorage:FindFirstChild("Remotes") then
+                     local SellRemote = ReplicatedStorage.Remotes:FindFirstChild("SellAll") or ReplicatedStorage.Remotes:FindFirstChild("SellFish")
+                     if SellRemote then SellRemote:FireServer() end
+                  end
+                  -- Alt: ReplicatedStorage.Events.Sell:FireServer()
+               end)
+               task.wait(10)  -- Sell every 10s
+            end
+         end)
+      end
+   end,
+})
+
+MainTab:CreateButton({
+   Name = "💸 Sell All NOW",
+   Callback = function()
+      pcall(function()
+         if ReplicatedStorage:FindFirstChild("Remotes") then
+            local SellRemote = ReplicatedStorage.Remotes:FindFirstChild("SellAll") or ReplicatedStorage.Remotes:FindFirstChild("SellFish")
+            if SellRemote then SellRemote:FireServer() end
+         end
+         print("🤑 Sold All!")
+      end)
+   end,
+})
+
+-- PLAYER TAB
+local PlayerSection = PlayerTab:CreateSection("Player Mods")
+
+PlayerTab:CreateSlider({
+   Name = "Walk Speed",
+   Range = {16, 200},
+   Increment = 1,
+   CurrentValue = 16,
+   Flag = "WalkSpeedSlider",
+   Callback = function(Value)
+      getgenv().WalkSpeed = Value
+      pcall(function()
+         player.Character.Humanoid.WalkSpeed = Value
+      end)
+   end,
+})
+
+PlayerTab:CreateSlider({
+   Name = "Jump Power",
+   Range = {50, 200},
+   Increment = 1,
+   CurrentValue = 50,
+   Flag = "JumpPowerSlider",
+   Callback = function(Value)
+      getgenv().JumpPower = Value
+      pcall(function()
+         player.Character.Humanoid.JumpPower = Value
+      end)
+   end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "🦘 Infinite Jump",
+   CurrentValue = false,
+   Flag = "InfJumpToggle",
+   Callback = function(Value)
+      getgenv().InfJumpEnabled = Value
+   end,
+})
+
+-- Infinite Jump Handler
+UserInputService.JumpRequest:Connect(function()
+   if getgenv().InfJumpEnabled and player.Character then
+      player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+   end
 end)
+
+-- Update Speed/Jump on Spawn
+player.CharacterAdded:Connect(function(char)
+   local humanoid = char:WaitForChild("Humanoid")
+   humanoid.WalkSpeed = getgenv().WalkSpeed
+   humanoid.JumpPower = getgenv().JumpPower
+end)
+
+-- Speed/Jump Loop
+RunService.Heartbeat:Connect(function()
+   if player.Character and player.Character:FindFirstChild("Humanoid") then
+      player.Character.Humanoid.WalkSpeed = getgenv().WalkSpeed
+      player.Character.Humanoid.JumpPower = getgenv().JumpPower
+   end
+end)
+
+-- TELEPORT TAB (Common Spots - Adjust CFrame if needed)
+local TPSection = TeleportTab:CreateSection("Teleports")
+
+TeleportTab:CreateButton({
+   Name = "🏝️ Spawn/Island",
+   Callback = function()
+      player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)  -- Adjust to spawn
+   end,
+})
+
+TeleportTab:CreateButton({
+   Name = "🎣 Best Fishing Spot",
+   Callback = function()
+      player.Character.HumanoidRootPart.CFrame = CFrame.new(-50, 5, -50)  -- Example good spot
+   end,
+})
+
+-- Notify Loaded
+Rayfield:Notify({
+   Title = "🎣 Go Fishing Hub Loaded!",
+   Content = "Auto Fish ON → INSTANT fish! Test di alt acc. Report bugs!",
+   Duration = 5,
+   Image = 4483362458,
+})
+
+print("🚀 **Go Fishing Rayfield Hub by Grok LOADED! Press Home to open GUI** 😈")
