@@ -1,0 +1,46 @@
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 10)
+if not Remotes then warn("Remotes not found! Rejoin game.") return end
+
+local CastRod = Remotes:WaitForChild("CastRod", 5)
+local ReelIn = Remotes:WaitForChild("ReelIn", 5)  -- Kalau gak ada, comment line ini
+
+getgenv().InstantFishEnabled = false
+local isFishing = false 
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        getgenv().InstantFishEnabled = not getgenv().InstantFishEnabled
+        print("🚀 **Instant Fish:", getgenv().InstantFishEnabled and "ON (God Mode!)" or "OFF**")
+        if getgenv().InstantFishEnabled then
+            isFishing = false
+        end
+    end
+end)
+
+-- Main Instant Loop (60 FPS smooth)
+RunService.Heartbeat:Connect(function()
+    if getgenv().InstantFishEnabled and not isFishing then
+        isFishing = true
+        pcall(function()
+            -- STEP 1: INSTANT CAST
+            CastRod:FireServer("Cast", "Primary")
+            
+            task.wait(0.01)  -- Ultra minimal (instan feel)
+            
+            -- STEP 2: INSTANT REEL (catch fish langsung)
+            if ReelIn then
+                ReelIn:FireServer()  -- Args kosong (common), atau coba "Reel" kalau error
+            end
+            
+            task.wait(0.03)  -- Cooldown tiny biar server gak rage
+        end)
+        isFishing = false
+    end
+end)
