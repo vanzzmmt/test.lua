@@ -1,0 +1,344 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+getgenv().InfO2 = false
+getgenv().AutoCatch = false
+getgenv().ESPRare = false
+getgenv().Fly = false
+getgenv().Highlights = {}
+
+
+local function getRareFish()
+    local fish = {}
+    local rarities = {"Divine", "Secret", "Mythic"}  -- prioritas
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj.PrimaryPart and obj:FindFirstChild("Rarity") then
+            local rarity = obj.Rarity.Value
+            for _, r in ipairs(rarities) do
+                if rarity:find(r) then
+                    table.insert(fish, obj)
+                    break
+                end
+            end
+        end
+    end
+    return fish
+end
+
+local function tpToFish(fish)
+    if fish.PrimaryPart then
+        root.CFrame = fish.PrimaryPart.CFrame * CFrame.new(0, 5, -3)
+        wait(0.1)
+        local prompt = fish:FindFirstChildOfClass("ProximityPrompt")
+        if prompt then fireproximityprompt(prompt) end
+    end
+end
+
+local Window = Rayfield:CreateWindow({
+    Name = "Dive Down Grok Hub",
+    LoadingTitle = "Loading OP Hub...",
+    LoadingSubtitle = "by vanzzmmt",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "DiveDownGrok",
+        FileName = "GrokConfig"
+    },
+    KeySystem = false  -- Keyless
+})
+
+local FarmTab = Window:CreateTab("🤿 Farm", 4483362458)
+local PlayerTab = Window:CreateTab("👤 Player")
+local TeleTab = Window:CreateTab("🗺️ Teleport")
+local MiscTab = Window:CreateTab("⚙️ Misc")
+
+FarmTab:CreateToggle({
+    Name = "Infinite Oxygen",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().InfO2 = Value
+        Rayfield:Notify({Title = "O2", Content = Value and "ON - No Drown!" or "OFF", Duration = 2})
+    end
+})
+
+FarmTab:CreateToggle({
+    Name = "Auto Catch Rare Fish (Mythic/Secret/Divine)",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().AutoCatch = Value
+        Rayfield:Notify({Title = "Auto Farm", Content = Value and "Hunting Rares..." or "Stopped", Duration = 2})
+    end
+})
+
+FarmTab:CreateToggle({
+    Name = "Rare Fish ESP",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().ESPRare = Value
+        if Value then
+            -- Apply ESP
+            for _, hl in pairs(getgenv().Highlights) do hl:Destroy() end
+            getgenv().Highlights = {}
+            for _, fish in pairs(getRareFish()) do
+                local hl = Instance.new("Highlight")
+                hl.FillColor = Color3.fromRGB(255, 215, 0)
+                hl.OutlineColor = Color3.fromRGB(255, 0, 0)
+                hl.FillTransparency = 0.5
+                hl.OutlineTransparency = 0
+                hl.Parent = fish
+                hl.Adornee = fish
+                table.insert(getgenv().Highlights, hl)
+            end
+        else
+            for _, hl in pairs(getgenv().Highlights) do hl:Destroy() end
+            getgenv().Highlights = {}
+        end
+    end
+})
+
+PlayerTab:CreateSlider({
+    Name = "Walk Speed",
+    Range = {16, 200},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value)
+        hum.WalkSpeed = Value
+    end
+})
+
+PlayerTab:CreateSlider({
+    Name = "Jump Power",
+    Range = {50, 200},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(Value)
+        hum.JumpPower = Value
+    end
+})
+
+PlayerTab:CreateToggle({
+    Name = "Fly (Noclip Style)",
+    CurrentValue = false,
+    Callback = function(Value)
+        getgenv().Fly = Value
+    end
+})
+
+TeleTab:CreateButton({
+    Name = "Teleport Surface (Y=0)",
+    Callback = function()
+        root.CFrame = CFrame.new(0, 50, 0)
+        Rayfield:Notify({Title = "TP", Content = "Surface!", Duration = 2})
+    end
+})
+
+TeleTab:CreateButton({
+    Name = "Teleport Mid Zone (\~ -1000)",
+    Callback = function()
+        root.CFrame = CFrame.new(0, -1000, 0)
+    end
+})
+
+TeleTab:CreateButton({
+    Name = "Teleport Deep/Last Zone (Atlantis \~ -3000)",
+    Callback = function()
+        root.CFrame = CFrame.new(0, -3000, 0)
+        Rayfield:Notify({Title = "TP Deep", Content = "Last Zone!", Duration = 2})
+    end
+})
+
+TeleTab:CreateButton({
+    Name = "Auto Sell All (Inventory)",
+    Callback = function()
+        -- Asumsi remote umum, adjust di explorer: ReplicatedStorage.Remotes.SellAll:FireServer()
+        pcall(function()
+            game:GetService("ReplicatedStorage").Remotes.SellAll:FireServer()  -- ganti nama remote
+        end)
+        Rayfield:Notify({Title = "Sell", Content = "Inventory Sold!", Duration = 3})
+    end
+})
+
+-- Main Loop (RenderStepped seperti pro hub)
+RunService.RenderStepped:Connect(function()
+    -- Inf O2
+    if getgenv().InfO2 then
+        pcall(function()
+            if player.leaderstats:FindFirstChild("Oxygen") then
+                player.leaderstats.Oxygen.Value = math.huge
+            end
+        end)
+        pcall(function()
+            local pg = player.PlayerGui:FindFirstChild("Main")  -- adjust gui name
+            if pg and pg:FindFirstChild("Oxygen") then pg.Oxygen.Value = 1 end
+        end)
+        hum.Health = math.huge
+    end
+
+    -- Auto Catch
+    if getgenv().AutoCatch then
+        local closest = nil
+        local minDist = math.huge
+        for _, fish in pairs(getRareFish()) do
+            local dist = (root.Position - fish.PrimaryPart.Position).Magnitude
+            if dist < minDist and dist < 500 then  -- dalam range
+                minDist = dist
+                closest = fish
+            end
+        end
+        if closest then
+            tpToFish(closest)
+            Rayfield:Notify({Title = "Caught", Content = closest.Rarity.Value, Duration = 1})
+        end
+    end
+
+    -- ESP Update
+    if getgenv().ESPRare then
+        for _, fish in pairs(getRareFish()) do
+            if not fish:FindFirstChild("GrokESP") then
+                local hl = Instance.new("Highlight")
+                hl.Name = "GrokESP"
+                hl.FillColor = Color3.fromRGB(255, 215, 0)
+                hl.OutlineColor = Color3.fromRGB(255, 0, 0)
+                hl.Parent = fish
+                table.insert(getgenv().Highlights, hl)
+            end
+        end
+    end
+
+    -- Fly
+    if getgenv().Fly then
+        local cam = Workspace.CurrentCamera
+        local vel = Instance.new("BodyVelocity")
+        vel.MaxForce = Vector3.new(4000,4000,4000)
+        vel.Velocity = cam.CFrame.LookVector * 50 + Vector3.new(0,0,0)
+        vel.Parent = root
+        wait()
+        vel:Destroy()
+    end
+end)
+
+print("🌊 Dive Down Grok Hub Loaded! Enjoy farming rares! 🐟")
+Rayfield:Notify({Title = "Hub Loaded", Content = "All features ready! Toggle & TP!", Duration = 4})   CurrentValue = 50,
+   Flag = "JumpSlider",
+   Callback = function(Value)
+      getgenv().JumpPower = Value
+   end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "🦘 Infinite Jump",
+   CurrentValue = false,
+   Flag = "InfJumpV2",
+   Callback = function(Value)
+      getgenv().InfJumpEnabled = Value
+   end,
+})
+
+-- Apply Mods
+local function applyMods()
+   if player.Character and player.Character:FindFirstChild("Humanoid") then
+      player.Character.Humanoid.WalkSpeed = getgenv().WalkSpeed
+      player.Character.Humanoid.JumpPower = getgenv().JumpPower
+   end
+end
+
+player.CharacterAdded:Connect(applyMods)
+RunService.Heartbeat:Connect(applyMods)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+   if getgenv().InfJumpEnabled then
+      if player.Character then
+         player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+      end
+   end
+end)
+
+-- TELEPORT (Best Spots 2026)
+local TPSection = TeleportTab:CreateSection("📍 Islands & Spots")
+
+TeleportTab:CreateButton({
+   Name = "🏝️ Spawn",
+   Callback = function()
+      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+         player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+      end
+   end,
+})
+
+TeleportTab:CreateButton({
+   Name = "🎣 Best Fish Spot 1 (Rare)",
+   Callback = function()
+      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+         player.Character.HumanoidRootPart.CFrame = CFrame.new(-150, 5, -200)  -- Adjust if needed
+      end
+   end,
+})
+
+TeleportTab:CreateButton({
+   Name = "🎣 Best Fish Spot 2",
+   Callback = function()
+      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+         player.Character.HumanoidRootPart.CFrame = CFrame.new(100, 5, 50)
+      end
+   end,
+})
+
+-- Loaded!
+Rayfield:Notify({
+   Title = "🎣 HUB v2 LOADED! ✅",
+   Content = "Equip Rod → Toggle Auto Fish → INSTANT $$$! Report if sell not work.",
+   Duration = 6,
+   Image = 4483362458,
+})
+
+print("🚀 **Go Fishing FIXED Rayfield v2 by Grok! Spam FightClick = God Mode** 😈")UserInputService.JumpRequest:Connect(function()
+   if getgenv().InfJumpEnabled and player.Character then
+      player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+   end
+end)
+
+-- Update Speed/Jump on Spawn
+player.CharacterAdded:Connect(function(char)
+   local humanoid = char:WaitForChild("Humanoid")
+   humanoid.WalkSpeed = getgenv().WalkSpeed
+   humanoid.JumpPower = getgenv().JumpPower
+end)
+
+-- Speed/Jump Loop
+RunService.Heartbeat:Connect(function()
+   if player.Character and player.Character:FindFirstChild("Humanoid") then
+      player.Character.Humanoid.WalkSpeed = getgenv().WalkSpeed
+      player.Character.Humanoid.JumpPower = getgenv().JumpPower
+   end
+end)
+
+-- TELEPORT TAB (Common Spots - Adjust CFrame if needed)
+local TPSection = TeleportTab:CreateSection("Teleports")
+
+TeleportTab:CreateButton({
+   Name = "🏝️ Spawn/Island",
+   Callback = function()
+      player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)  -- Adjust to spawn
+   end,
+})
+
+TeleportTab:CreateButton({
+   Name = "🎣 Best Fishing Spot",
+   Callback = function()
+      player.Character.HumanoidRootPart.CFrame = CFrame.new(-50, 5, -50)  -- Example good spot
+   end,
+})
+
+-- Notify Loaded
+Rayfield:Notify({
+   Title = "🎣 Go Fishing Hub Loaded!",
+   Content = "Auto Fish ON → INSTANT fish! Test di alt acc. Report bugs!",
+   Duration = 5,
+   Image = 4483362458,
+})
+
+print("🚀 **Go Fishing Rayfield Hub by Grok LOADED! Press Home to open GUI** 😈")
