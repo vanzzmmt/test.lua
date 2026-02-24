@@ -1,24 +1,35 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local root = char:WaitForChild("HumanoidRootPart")
-local hum = char:WaitForChild("Humanoid")
+
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({
+    Name = "Dive Down Grok Hub",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "DiveDownGrok"
+})
+
+local FarmTab = Window:MakeTab({Name = "Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local PlayerTab = Window:MakeTab({Name = "Player", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local TeleTab = Window:MakeTab({Name = "Teleport", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local MiscTab = Window:MakeTab({Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
 getgenv().InfO2 = false
 getgenv().AutoCatch = false
 getgenv().ESPRare = false
 getgenv().Fly = false
 getgenv().Highlights = {}
 
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
 
 local function getRareFish()
     local fish = {}
-    local rarities = {"Divine", "Secret", "Mythic"}  -- prioritas
-    for _, obj in ipairs(Workspace:GetDescendants()) do
+    local rarities = {"Divine", "Secret", "Mythic"}
+    for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and obj.PrimaryPart and obj:FindFirstChild("Rarity") then
-            local rarity = obj.Rarity.Value
+            local rarity = obj.Rarity.Value or ""
             for _, r in ipairs(rarities) do
                 if rarity:find(r) then
                     table.insert(fish, obj)
@@ -39,77 +50,149 @@ local function tpToFish(fish)
     end
 end
 
-local Window = Rayfield:CreateWindow({
-    Name = "Dive Down Grok Hub",
-    LoadingTitle = "Loading OP Hub...",
-    LoadingSubtitle = "by vanzzmmt",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "DiveDownGrok",
-        FileName = "GrokConfig"
-    },
-    KeySystem = false  -- Keyless
-})
-
-local FarmTab = Window:CreateTab("🤿 Farm", 4483362458)
-local PlayerTab = Window:CreateTab("👤 Player")
-local TeleTab = Window:CreateTab("🗺️ Teleport")
-local MiscTab = Window:CreateTab("⚙️ Misc")
-
-FarmTab:CreateToggle({
+-- Farm Tab
+FarmTab:AddToggle({
     Name = "Infinite Oxygen",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         getgenv().InfO2 = Value
-        Rayfield:Notify({Title = "O2", Content = Value and "ON - No Drown!" or "OFF", Duration = 2})
-    end
+        OrionLib:MakeNotification({Name = "O2", Content = Value and "ON - No Drown!" or "OFF", Image = "rbxassetid://4483345998", Time = 3})
+    end    
 })
 
-FarmTab:CreateToggle({
-    Name = "Auto Catch Rare Fish (Mythic/Secret/Divine)",
-    CurrentValue = false,
+FarmTab:AddToggle({
+    Name = "Auto Catch Rare Fish",
+    Default = false,
     Callback = function(Value)
         getgenv().AutoCatch = Value
-        Rayfield:Notify({Title = "Auto Farm", Content = Value and "Hunting Rares..." or "Stopped", Duration = 2})
-    end
+        OrionLib:MakeNotification({Name = "Auto Farm", Content = Value and "Hunting Divine/Secret/Mythic..." or "Stopped", Image = "rbxassetid://4483345998", Time = 3})
+    end    
 })
 
-FarmTab:CreateToggle({
+FarmTab:AddToggle({
     Name = "Rare Fish ESP",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         getgenv().ESPRare = Value
         if Value then
-            -- Apply ESP
             for _, hl in pairs(getgenv().Highlights) do hl:Destroy() end
             getgenv().Highlights = {}
             for _, fish in pairs(getRareFish()) do
                 local hl = Instance.new("Highlight")
                 hl.FillColor = Color3.fromRGB(255, 215, 0)
                 hl.OutlineColor = Color3.fromRGB(255, 0, 0)
-                hl.FillTransparency = 0.5
+                hl.FillTransparency = 0.4
                 hl.OutlineTransparency = 0
                 hl.Parent = fish
-                hl.Adornee = fish
                 table.insert(getgenv().Highlights, hl)
             end
         else
             for _, hl in pairs(getgenv().Highlights) do hl:Destroy() end
             getgenv().Highlights = {}
         end
-    end
+    end    
 })
 
-PlayerTab:CreateSlider({
+-- Player Tab
+PlayerTab:AddSlider({
     Name = "Walk Speed",
-    Range = {16, 200},
+    Min = 16,
+    Max = 200,
+    Default = 16,
+    Color = Color3.fromRGB(255,255,255),
     Increment = 1,
-    CurrentValue = 16,
+    ValueName = "Speed",
     Callback = function(Value)
         hum.WalkSpeed = Value
-    end
+    end    
 })
 
+PlayerTab:AddSlider({
+    Name = "Jump Power",
+    Min = 50,
+    Max = 200,
+    Default = 50,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Power",
+    Callback = function(Value)
+        hum.JumpPower = Value
+    end    
+})
+
+PlayerTab:AddToggle({
+    Name = "Fly (Basic)",
+    Default = false,
+    Callback = function(Value)
+        getgenv().Fly = Value
+    end    
+})
+
+-- Teleport Tab
+TeleTab:AddButton({
+    Name = "Teleport to Surface",
+    Callback = function()
+        root.CFrame = CFrame.new(0, 50, 0)
+    end    
+})
+
+TeleTab:AddButton({
+    Name = "Teleport to Mid Zone",
+    Callback = function()
+        root.CFrame = CFrame.new(0, -1000, 0)
+    end    
+})
+
+TeleTab:AddButton({
+    Name = "Teleport to Deep/Last Zone",
+    Callback = function()
+        root.CFrame = CFrame.new(0, -3000, 0)
+        OrionLib:MakeNotification({Name = "TP", Content = "Deep Zone Reached!", Time = 3})
+    end    
+})
+
+TeleTab:AddButton({
+    Name = "Auto Sell Inventory",
+    Callback = function()
+        pcall(function()
+            game.ReplicatedStorage.Remotes.SellAll:FireServer()  -- adjust nama remote kalau beda
+        end)
+    end    
+})
+
+-- Loop utama
+game:GetService("RunService").RenderStepped:Connect(function()
+    if getgenv().InfO2 then
+        pcall(function()
+            player.leaderstats.Oxygen.Value = math.huge  -- adjust kalau nama beda (Oxygen/O2)
+        end)
+        hum.Health = math.huge
+    end
+
+    if getgenv().AutoCatch then
+        local closest = nil
+        local minDist = math.huge
+        for _, fish in pairs(getRareFish()) do
+            local dist = (root.Position - fish.PrimaryPart.Position).Magnitude
+            if dist < minDist and dist < 600 then
+                minDist = dist
+                closest = fish
+            end
+        end
+        if closest then
+            tpToFish(closest)
+        end
+    end
+
+    if getgenv().Fly then
+        local cam = workspace.CurrentCamera
+        local direction = cam.CFrame.LookVector * 50
+        root.Velocity = direction
+    end
+end)
+
+OrionLib:Init()
+print("Dive Down Orion Hub Loaded! UI harus muncul sekarang.")
 PlayerTab:CreateSlider({
     Name = "Jump Power",
     Range = {50, 200},
