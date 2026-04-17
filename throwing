@@ -55,13 +55,18 @@ MainTab:CreateToggle({
 
         if autoThrow then
             task.spawn(function()
-                while autoThrow do
-                    pcall(function()
-                        remoteEvent:FireServer("Throw Object")
-                        task.wait(0.08) -- delay lempar
-                        remoteEvent:FireServer("Landed")
-                    end)
-                    task.wait(0.12) -- delay aman
+    while autoThrow do
+        pcall(function()
+            remoteEvent:FireServer("Throw Object")
+        end)
+
+        task.wait(0.25) -- tunggu object "jatuh"
+
+        pcall(function()
+            remoteEvent:FireServer("Landed")
+        end)
+
+        task.wait(0.2)
                 end
             end)
         end
