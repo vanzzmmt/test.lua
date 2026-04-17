@@ -2,8 +2,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Throwing Simulator OP",
-    LoadingTitle = "Loading...",
-    LoadingSubtitle = "by ChatGPT",
+    LoadingTitle = "Sabar NYETT..",
+    LoadingSubtitle = "by vanzzmmt",
     ConfigurationSaving = {
         Enabled = false
     }
@@ -12,19 +12,43 @@ local Window = Rayfield:CreateWindow({
 -- TAB
 local MainTab = Window:CreateTab("Main", 4483362458)
 
+-- SERVICES
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- PLAYER
+local player = Players.LocalPlayer
+
 -- REMOTES
-local remoteEvent = game:GetService("ReplicatedStorage").Paper.Remotes.__remoteevent
-local remoteFunction = game:GetService("ReplicatedStorage").Paper.Remotes.__remotefunction
+local remoteEvent = ReplicatedStorage.Paper.Remotes.__remoteevent
+local remoteFunction = ReplicatedStorage.Paper.Remotes.__remotefunction
 
 -- FLAGS
 local autoThrow = false
 local autoHatch = false
 
 ---------------------------------------------------
--- 🔥 AUTO THROW TOGGLE
+-- 🧠 FUNCTION: TELEPORT TO EGG
+---------------------------------------------------
+local function teleportToEgg()
+    local char = player.Character
+    if not char then return end
+
+    -- ⚠️ kemungkinan path egg (kalau beda nanti kita sesuaikan)
+    local eggFolder = workspace:FindFirstChild("Eggs") 
+    if not eggFolder then return end
+
+    local egg = eggFolder:FindFirstChild("TNT Egg")
+    if egg and egg:FindFirstChild("Main") then
+        char:PivotTo(egg.Main.CFrame + Vector3.new(0, 3, 0))
+    end
+end
+
+---------------------------------------------------
+-- 🔥 AUTO THROW (FIXED DELAY)
 ---------------------------------------------------
 MainTab:CreateToggle({
-    Name = "Auto Throw + Instant Landed",
+    Name = "Auto Throw (Stable)",
     CurrentValue = false,
     Callback = function(Value)
         autoThrow = Value
@@ -32,10 +56,12 @@ MainTab:CreateToggle({
         if autoThrow then
             task.spawn(function()
                 while autoThrow do
-                    remoteEvent:FireServer("Throw Object")
-                    task.wait(0.02)
-                    remoteEvent:FireServer("Landed")
-                    task.wait(0.05)
+                    pcall(function()
+                        remoteEvent:FireServer("Throw Object")
+                        task.wait(0.08) -- delay lempar
+                        remoteEvent:FireServer("Landed")
+                    end)
+                    task.wait(0.12) -- delay aman
                 end
             end)
         end
@@ -43,10 +69,10 @@ MainTab:CreateToggle({
 })
 
 ---------------------------------------------------
--- 🥚 AUTO HATCH TOGGLE
+-- 🥚 AUTO HATCH (AUTO TP FIX)
 ---------------------------------------------------
 MainTab:CreateToggle({
-    Name = "Auto Hatch (TNT Egg)",
+    Name = "Auto Hatch (Auto TP)",
     CurrentValue = false,
     Callback = function(Value)
         autoHatch = Value
@@ -55,9 +81,11 @@ MainTab:CreateToggle({
             task.spawn(function()
                 while autoHatch do
                     pcall(function()
+                        teleportToEgg()
+                        task.wait(0.2)
                         remoteFunction:InvokeServer("Hatch Egg", "TNT Egg", "Max")
                     end)
-                    task.wait(0.3)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -69,5 +97,5 @@ MainTab:CreateToggle({
 ---------------------------------------------------
 MainTab:CreateParagraph({
     Title = "Info",
-    Content = "Auto Throw + Hatch sudah aktif. Craft menyusul."
+    Content = "✔ Auto Throw Stabil\n✔ Auto Hatch dengan Teleport\n✔ Siap AFK"
 })
