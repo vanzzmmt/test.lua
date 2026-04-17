@@ -1,0 +1,73 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Throwing Simulator OP",
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "by ChatGPT",
+    ConfigurationSaving = {
+        Enabled = false
+    }
+})
+
+-- TAB
+local MainTab = Window:CreateTab("Main", 4483362458)
+
+-- REMOTES
+local remoteEvent = game:GetService("ReplicatedStorage").Paper.Remotes.__remoteevent
+local remoteFunction = game:GetService("ReplicatedStorage").Paper.Remotes.__remotefunction
+
+-- FLAGS
+local autoThrow = false
+local autoHatch = false
+
+---------------------------------------------------
+-- 🔥 AUTO THROW TOGGLE
+---------------------------------------------------
+MainTab:CreateToggle({
+    Name = "Auto Throw + Instant Landed",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoThrow = Value
+
+        if autoThrow then
+            task.spawn(function()
+                while autoThrow do
+                    remoteEvent:FireServer("Throw Object")
+                    task.wait(0.02)
+                    remoteEvent:FireServer("Landed")
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+---------------------------------------------------
+-- 🥚 AUTO HATCH TOGGLE
+---------------------------------------------------
+MainTab:CreateToggle({
+    Name = "Auto Hatch (TNT Egg)",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoHatch = Value
+
+        if autoHatch then
+            task.spawn(function()
+                while autoHatch do
+                    pcall(function()
+                        remoteFunction:InvokeServer("Hatch Egg", "TNT Egg", "Max")
+                    end)
+                    task.wait(0.3)
+                end
+            end)
+        end
+    end
+})
+
+---------------------------------------------------
+-- 📝 INFO
+---------------------------------------------------
+MainTab:CreateParagraph({
+    Title = "Info",
+    Content = "Auto Throw + Hatch sudah aktif. Craft menyusul."
+})
