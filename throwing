@@ -60,13 +60,13 @@ MainTab:CreateToggle({
             remoteEvent:FireServer("Throw Object")
         end)
 
-        task.wait(0.25) -- tunggu object "jatuh"
+        task.wait(1.25) -- tunggu object "jatuh"
 
         pcall(function()
             remoteEvent:FireServer("Landed")
         end)
 
-        task.wait(0.2)
+        task.wait(0.50)
                 end
             end)
         end
