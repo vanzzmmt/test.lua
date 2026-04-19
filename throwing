@@ -88,7 +88,7 @@ MainTab:CreateToggle({
                     pcall(function()
                         teleportToEgg()
                         task.wait(0.2)
-                        remoteFunction:InvokeServer("Hatch Egg", "TNT Egg", "Max")
+                        remoteFunction:InvokeServer("Hatch Egg", "Farm Egg", "Max")
                     end)
                     task.wait(0.5)
                 end
