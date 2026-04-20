@@ -9,44 +9,17 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- TAB
 local MainTab = Window:CreateTab("Main", 4483362458)
-
--- SERVICES
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- PLAYER
 local player = Players.LocalPlayer
-
--- REMOTES
 local remoteEvent = ReplicatedStorage.Paper.Remotes.__remoteevent
 local remoteFunction = ReplicatedStorage.Paper.Remotes.__remotefunction
-
--- FLAGS
 local autoThrow = false
 local autoHatch = false
+local autoRebirth = false
 
----------------------------------------------------
--- 🧠 FUNCTION: TELEPORT TO EGG
----------------------------------------------------
-local function teleportToEgg()
-    local char = player.Character
-    if not char then return end
 
-    -- ⚠️ kemungkinan path egg (kalau beda nanti kita sesuaikan)
-    local eggFolder = workspace:FindFirstChild("Eggs") 
-    if not eggFolder then return end
-
-    local egg = eggFolder:FindFirstChild("TNT Egg")
-    if egg and egg:FindFirstChild("Main") then
-        char:PivotTo(egg.Main.CFrame + Vector3.new(0, 3, 0))
-    end
-end
-
----------------------------------------------------
--- 🔥 AUTO THROW (FIXED DELAY)
----------------------------------------------------
 MainTab:CreateToggle({
     Name = "Auto Throw (Stable)",
     CurrentValue = false,
@@ -55,29 +28,26 @@ MainTab:CreateToggle({
 
         if autoThrow then
             task.spawn(function()
-    while autoThrow do
-        pcall(function()
-            remoteEvent:FireServer("Throw Object")
-        end)
+                while autoThrow do
+                    pcall(function()
+                        remoteEvent:FireServer("Throw Object")
+                    end)
 
-        task.wait(1.25) -- tunggu object "jatuh"
+                    task.wait(1.25)
 
-        pcall(function()
-            remoteEvent:FireServer("Landed")
-        end)
+                    pcall(function()
+                        remoteEvent:FireServer("Landed")
+                    end)
 
-        task.wait(0.50)
+                    task.wait(0.5)
                 end
             end)
         end
     end
 })
 
----------------------------------------------------
--- 🥚 AUTO HATCH (AUTO TP FIX)
----------------------------------------------------
 MainTab:CreateToggle({
-    Name = "Auto Hatch (Auto TP)",
+    Name = "Auto Hatch",
     CurrentValue = false,
     Callback = function(Value)
         autoHatch = Value
@@ -86,11 +56,28 @@ MainTab:CreateToggle({
             task.spawn(function()
                 while autoHatch do
                     pcall(function()
-                        teleportToEgg()
-                        task.wait(0.2)
                         remoteFunction:InvokeServer("Hatch Egg", "Farm Egg", "Max")
                     end)
                     task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoRebirth = Value
+
+        if autoRebirth then
+            task.spawn(function()
+                while autoRebirth do
+                    pcall(function()
+                        remoteFunction:InvokeServer("Rebirth", 21)
+                    end)
+                    task.wait(2) -- biar aman ga spam
                 end
             end)
         end
@@ -102,5 +89,5 @@ MainTab:CreateToggle({
 ---------------------------------------------------
 MainTab:CreateParagraph({
     Title = "Info",
-    Content = "✔ Auto Throw Stabil\n✔ Auto Hatch dengan Teleport\n✔ Siap AFK"
+    Content = "✔ Auto Throw Stabil\n✔ Auto Hatch Tanpa TP\n✔ Auto Rebirth\n✔ Siap AFK"
 })
