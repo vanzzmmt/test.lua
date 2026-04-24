@@ -1,17 +1,17 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Throwing Simulator OP",
-    LoadingTitle = "Sabar NYETT..",
+    Name = "Throwing Simulator ULTRA AFK",
+    LoadingTitle = "Loading...",
     LoadingSubtitle = "by vanzzmmt",
-    ConfigurationSaving = {
-        Enabled = false
-    }
+    ConfigurationSaving = {Enabled = false}
 })
 
 local MainTab = Window:CreateTab("Main", 4483362458)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
+local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 local remoteEvent = ReplicatedStorage.Paper.Remotes.__remoteevent
 local remoteFunction = ReplicatedStorage.Paper.Remotes.__remotefunction
@@ -20,26 +20,74 @@ local autoHatch = false
 local autoRebirth = false
 
 
+player.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    task.wait(1)
+    VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+
+local function UltraLag()
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        elseif v:IsA("Texture") or v:IsA("Decal") then
+            pcall(function() v:Destroy() end)
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            pcall(function() v:Destroy() end)
+        elseif v:IsA("Explosion") then
+            pcall(function() v:Destroy() end)
+        end
+    end
+
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end
+
+local function HidePlayers()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            plr.Character:Destroy()
+        end
+    end
+
+    Players.PlayerAdded:Connect(function(plr)
+        if plr ~= player then
+            plr.CharacterAdded:Connect(function(char)
+                task.wait(1)
+                char:Destroy()
+            end)
+        end
+    end)
+end
+
+local function NoAnim()
+    if player.Character then
+        local hum = player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(11)
+        end
+    end
+end
+
 MainTab:CreateToggle({
-    Name = "Auto Throw (Stable)",
+    Name = "Auto Throw",
     CurrentValue = false,
     Callback = function(Value)
         autoThrow = Value
-
         if autoThrow then
             task.spawn(function()
                 while autoThrow do
                     pcall(function()
                         remoteEvent:FireServer("Throw Object")
                     end)
-
-                    task.wait(1.25)
+                    task.wait(1.2)
 
                     pcall(function()
                         remoteEvent:FireServer("Landed")
                     end)
-
-                    task.wait(0.5)
+                    task.wait(0.4)
                 end
             end)
         end
@@ -51,12 +99,11 @@ MainTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         autoHatch = Value
-
         if autoHatch then
             task.spawn(function()
                 while autoHatch do
                     pcall(function()
-                        remoteFunction:InvokeServer("Hatch Egg", "Farm Egg", "Max")
+                        remoteFunction:InvokeServer("Hatch Egg","Farm Egg","Max")
                     end)
                     task.wait(0.5)
                 end
@@ -70,24 +117,29 @@ MainTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         autoRebirth = Value
-
         if autoRebirth then
             task.spawn(function()
                 while autoRebirth do
                     pcall(function()
-                        remoteFunction:InvokeServer("Rebirth", 21)
+                        remoteFunction:InvokeServer("Rebirth",21)
                     end)
-                    task.wait(2) -- biar aman ga spam
+                    task.wait(2)
                 end
             end)
         end
     end
 })
 
----------------------------------------------------
--- 📝 INFO
----------------------------------------------------
+MainTab:CreateButton({
+    Name = "Activate Ultra FPS Boost",
+    Callback = function()
+        UltraLag()
+        HidePlayers()
+        NoAnim()
+    end
+})
+
 MainTab:CreateParagraph({
-    Title = "Info",
-    Content = "✔ Auto Throw Stabil\n✔ Auto Hatch Tanpa TP\n✔ Auto Rebirth\n✔ Siap AFK"
+    Title = "INFO",
+    Content = "apalah pokonya work anj"
 })
