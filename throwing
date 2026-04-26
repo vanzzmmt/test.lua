@@ -23,7 +23,7 @@ local autoHatch = false
 local autoRebirth = false
 
 -- 🔥 LIST MULTI EGG
-local eggList = {"Blossom Egg", "Farmer Egg"}
+local eggList = {"Blossom Egg", "Farmer Egg", "Golden Egg"}
 
 -- 💤 Anti AFK
 player.Idled:Connect(function()
