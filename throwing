@@ -8,24 +8,31 @@ local Window = Rayfield:CreateWindow({
 })
 
 local MainTab = Window:CreateTab("Main", 4483362458)
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
+
 local player = Players.LocalPlayer
 local remoteEvent = ReplicatedStorage.Paper.Remotes.__remoteevent
 local remoteFunction = ReplicatedStorage.Paper.Remotes.__remotefunction
+
 local autoThrow = false
 local autoHatch = false
 local autoRebirth = false
 
+-- 🔥 LIST MULTI EGG
+local eggList = {"Blossom Egg", "Farmer Egg"}
 
+-- 💤 Anti AFK
 player.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
     task.wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end)
 
+-- 🚀 FPS BOOST
 local function UltraLag()
     for _, v in pairs(game:GetDescendants()) do
         if v:IsA("BasePart") then
@@ -45,6 +52,7 @@ local function UltraLag()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end
 
+-- 👥 Hide player lain
 local function HidePlayers()
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= player and plr.Character then
@@ -62,6 +70,7 @@ local function HidePlayers()
     end)
 end
 
+-- 🚫 No Anim
 local function NoAnim()
     if player.Character then
         local hum = player.Character:FindFirstChildOfClass("Humanoid")
@@ -71,6 +80,7 @@ local function NoAnim()
     end
 end
 
+-- 🎯 AUTO THROW
 MainTab:CreateToggle({
     Name = "Auto Throw",
     CurrentValue = false,
@@ -94,6 +104,173 @@ MainTab:CreateToggle({
     end
 })
 
+-- 🥚 AUTO HATCH MULTI
+MainTab:CreateToggle({
+    Name = "Auto Hatch (Multi Egg)",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoHatch = Value
+
+        if autoHatch then
+            task.spawn(function()
+                while autoHatch do
+                    for _, egg in ipairs(eggList) do
+                        if not autoHatch then break end
+                        
+                        pcall(function()
+                            remoteFunction:InvokeServer("Hatch Egg", egg, "Max")
+                        end)
+
+                        task.wait(0.3) -- bisa ubah jadi 0.2 biar lebih cepat
+                    end
+                end
+            end)
+        end
+    end
+})
+
+-- ♻️ AUTO REBIRTH
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoRebirth = Value
+        if autoRebirth then
+            task.spawn(function()
+                while autoRebirth do
+                    pcall(function()
+                        remoteFunction:InvokeServer("Rebirth",21)
+                    end)
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+
+-- 🚀 FPS BOOST BUTTON
+MainTab:CreateButton({
+    Name = "Activate Ultra FPS Boost",
+    Callback = function()
+        UltraLag()
+        HidePlayers()
+        NoAnim()
+    end
+})
+
+-- ℹ️ INFO
+MainTab:CreateParagraph({
+    Title = "INFO",
+    Content = "Multi Egg: Blossom + Farmer | Ultra AFK Mode"
+})rs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            plr.Character:Destroy()
+        end
+    end
+
+    Players.PlayerAdded:Connect(function(plr)
+        if plr ~= player then
+            plr.CharacterAdded:Connect(function(char)
+                task.wait(1)
+                char:Destroy()
+            end)
+        end
+    end)
+end
+
+-- 🚫 No Anim
+local function NoAnim()
+    if player.Character then
+        local hum = player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(11)
+        end
+    end
+end
+
+-- 🎯 AUTO THROW
+MainTab:CreateToggle({
+    Name = "Auto Throw",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoThrow = Value
+        if autoThrow then
+            task.spawn(function()
+                while autoThrow do
+                    pcall(function()
+                        remoteEvent:FireServer("Throw Object")
+                    end)
+                    task.wait(1.2)
+
+                    pcall(function()
+                        remoteEvent:FireServer("Landed")
+                    end)
+                    task.wait(0.4)
+                end
+            end)
+        end
+    end
+})
+
+-- 🥚 AUTO HATCH MULTI
+MainTab:CreateToggle({
+    Name = "Auto Hatch (Multi Egg)",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoHatch = Value
+
+        if autoHatch then
+            task.spawn(function()
+                while autoHatch do
+                    for _, egg in ipairs(eggList) do
+                        if not autoHatch then break end
+                        
+                        pcall(function()
+                            remoteFunction:InvokeServer("Hatch Egg", egg, "Max")
+                        end)
+
+                        task.wait(0.3) -- bisa ubah jadi 0.2 biar lebih cepat
+                    end
+                end
+            end)
+        end
+    end
+})
+
+-- ♻️ AUTO REBIRTH
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Callback = function(Value)
+        autoRebirth = Value
+        if autoRebirth then
+            task.spawn(function()
+                while autoRebirth do
+                    pcall(function()
+                        remoteFunction:InvokeServer("Rebirth",21)
+                    end)
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+
+-- 🚀 FPS BOOST BUTTON
+MainTab:CreateButton({
+    Name = "Activate Ultra FPS Boost",
+    Callback = function()
+        UltraLag()
+        HidePlayers()
+        NoAnim()
+    end
+})
+
+-- ℹ️ INFO
+MainTab:CreateParagraph({
+    Title = "INFO",
+    Content = "Multi Egg: Blossom + Farmer | Ultra AFK Mode"
+})
 MainTab:CreateToggle({
     Name = "Auto Hatch",
     CurrentValue = false,
